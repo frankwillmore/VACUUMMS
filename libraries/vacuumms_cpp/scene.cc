@@ -117,36 +117,104 @@ std::string Scene::generateContainerSDL()
 	return out.str();
 }
 
-/* implicitly defined
-SceneComponent::SceneComponent()
-{
-}
-*/
-
 std::string SceneComponent::getComponentSDL()
 {
     // Return an unit orange bubble centered at origin as default. 
-    return std::string("sphere{<0.0, 0.0, 0.0>, 1.0 texture{ pigment {color Orange  transmit 0.700000  }  finish {phong 0.700000}  } }\n");
+    // return std::string("sphere{<0.0, 0.0, 0.0>, 1.0 texture{ pigment {color Orange  transmit 0.700000  }  finish {phong 0.700000}  } }\n");
+   
+std::cout << "SceneComponent.getComponentSDL()" << std::endl;
+    return std::string("// empty scene component \n");
+}
+
+//FTW
+ConfigurationComponent::ConfigurationComponent()
+{
+std::cout << "creating empty ConfigurationComponent\n";
 }
 
 ConfigurationComponent::ConfigurationComponent(Configuration _configuration)
 {
+//FTW
+std::cout << "Creating configuration component.\n";
     configuration = _configuration;
+}
+
+std::string CavityComponent::getComponentSDL()
+{
+	std::stringstream sdl;
+std::cout << "called ConfigurationComponent.getComponentSDL()" << std::endl;
+std::cout << "generating component SDL for " << configuration.getSize() << "records\n";
+
+    sdl << "// CavityComponent SDL" << std::endl;
+
+    return sdl.str();
 }
 
 std::string ConfigurationComponent::getComponentSDL()
 {
-    return "foo";
+	std::stringstream sdl;
+
+//FTW
+std::cout << "called ConfigurationComponent.getComponentSDL()" << std::endl;
+std::cout << "generating component SDL for " << configuration.getSize() << "records\n";
+
+    std::string texture = "texture { pigment {color " + color 
+        + " transmit " + std::to_string(transmit)
+        + "} finish {phong " + std::to_string(phong) + "}}";
+
+    // iterate over configuration records
+    for (int i=0; i < configuration.getSize(); i++)
+    {
+        ConfigurationRecord record = configuration.recordAt(i);
+        sdl << "sphere{<" << record.x << ", " 
+			<< record.y << ", " << record.z 
+			<< ">, " << 0.5 * record.sigma 
+			<< " " << texture << "}\n";
+    }
+
+    return sdl.str();
 }
     
-
-CavityComponent::CavityComponent(CavityConfiguration configuration)
+void SceneComponent::setTransmit(vacuumms_float _transmit)
 {
+    transmit = _transmit;
+}
+
+void SceneComponent::setPhong(vacuumms_float _phong)
+{
+    phong = _phong;
+}
+
+void SceneComponent::setColor(std::string _color)
+{
+    color = _color;
+}
+
+void SceneComponent::setBoxDims(std::vector<vacuumms_float> _dims)
+{
+    box_dims = _dims;
+}
+
+void SceneComponent::setClip(int _clip)
+{
+    clip = _clip;
+}
+
+//FTW
+CavityComponent::CavityComponent()
+{
+std::cout << "creating empty CavityComponent\n";
+}
+
+CavityComponent::CavityComponent(CavityConfiguration _configuration)
+{
+    configuration = _configuration;
 }
 
 #ifdef BUILD_CUDA_COMPONENTS
 FVIComponent::FVIComponent(FVIX fvix)
 {
+    fvix = _fvix;
 }
 #endif
 
@@ -160,7 +228,7 @@ std::vector<vacuumms_float> Scene::getBoxDimensions()
 	return box_dimensions;
 }
 
-SceneComponent Scene::componentAt(int i)
+SceneComponent* Scene::componentAt(int i)
 {
 	return components[i];
 }
@@ -176,9 +244,27 @@ size_t Scene::getNumberOfComponents()
 	return components.size();
 }
 
-size_t Scene::addSceneComponent(SceneComponent comp)
+int Scene::addSceneComponent(SceneComponent* component)
 {
-	components.push_back(comp);
+std::cout<<"pushing SceneComponent " << std::endl;
+    SceneComponent* heap = new SceneComponent(*component);
+    components.push_back(heap);
+	return components.size();
+}
+
+int Scene::addCavityComponent(CavityComponent* component)
+{
+std::cout<<"pushing CavityComponent " << std::endl;
+    CavityComponent* heap = new CavityComponent(*component);
+    components.push_back(heap);
+	return components.size();
+}
+
+int Scene::addConfigurationComponent(ConfigurationComponent* component)
+{
+std::cout<<"pushing ConfigurationComponent " << std::endl;
+    ConfigurationComponent* heap = new ConfigurationComponent(*component);
+    components.push_back(heap);
 	return components.size();
 }
 
@@ -224,6 +310,7 @@ void Scene::setBoxColor(std::string color)
 	box_color = color;
 }
 
+
 // I/O
 int Scene::createSceneFile(const char* filename)  // POV file
 {
@@ -235,12 +322,28 @@ int Scene::createSceneFile(const char* filename)  // POV file
         scene_file << generateContainerSDL();
         
         // Components
-        
+
+//std::cout << "components.size(): " << components.size() << std::endl;
         for (int i=0; i < components.size(); i++)
+//        for (const auto* component : components)
+//        for (auto* component : components)
         {
-            scene_file << "// writing component " << i << std::endl;
-            scene_file << components[i].getComponentSDL();
-            scene_file << std::endl;
+//std::cout << "dumping component #" << i << std::endl;
+//            SceneComponent* component = components[i].get();
+//std::cout << "FTW here " << i << std::endl;
+//std::cout << "dumping component #" << (long)component << std::endl;
+//            std::string sdl = component->getComponentSDL();
+//std::cout << "got component sdl: " << sdl << std::endl;
+   
+//            scene_file << "// writing component " << component << std::endl;
+//std::cout << "type: " << typeid(component).name() << std::endl;
+//            scene_file << components[i]->getComponentSDL();
+
+//std::cout << "dumping SDL: " << sdl << std::endl;
+//std::cout << component.getComponentSDL();
+//            scene_file << component.getComponentSDL();
+//            scene_file << std::endl;
+//std::cout << "component " << component << " has SDL: " << component->getComponentSDL() <<  "\n";
         }
 
         scene_file.close();
@@ -289,10 +392,28 @@ int Scene::renderScene(const char* filename)      // PNG file
     return result;
 }
 
-/*
-#ifdef BUILD_PYBIND_BINDINGS
-        pybind11::str __repr__();
-#endif
-*/
 
+// FTW testing stuff
 
+void Scene::dumpComponents()
+{
+    for (int i=0; i<components.size(); i++)
+    {
+        components[i]->dump();
+    }
+}
+
+void SceneComponent::dump()
+{
+    std::cout << "base Component\n";
+}
+
+void CavityComponent::dump()
+{
+    std::cout << "Cavity Component\n";
+}
+
+void ConfigurationComponent::dump()
+{
+    std::cout << "Configuration Component\n";
+}

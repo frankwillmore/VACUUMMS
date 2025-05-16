@@ -122,6 +122,10 @@ PYBIND11_MODULE(vacuumms, m)
         .def("applyStandardLight", &Scene::applyStandardLight)
         .def("applyAmbientLight", &Scene::applyAmbientLight)
         .def("addSceneComponent", &Scene::addSceneComponent)
+        .def("addCavityComponent", &Scene::addCavityComponent)
+        .def("addConfigurationComponent", &Scene::addConfigurationComponent)
+        .def("dumpComponents", &Scene::dumpComponents)
+
 //        std::string generateContainerSDL();
 //        SceneComponent componentAt(int i);
 //        size_t deleteComponentAt(int i);
@@ -129,6 +133,21 @@ PYBIND11_MODULE(vacuumms, m)
     ;
     
     py::class_<SceneComponent>(m, "SceneComponent")
+        .def(py::init<>())
+        .def("setTransmit", &SceneComponent::setTransmit)
+        .def("setPhong", &SceneComponent::setPhong)
+        .def("setColor", &SceneComponent::setColor)
+        .def("setBoxDims", &SceneComponent::setBoxDims)
+        .def("setClip", &SceneComponent::setClip)
+    ;
+
+    py::class_<ConfigurationComponent, SceneComponent>(m, "ConfigurationComponent")
+        .def(py::init<Configuration>())
+        .def(py::init<>())
+    ;
+
+    py::class_<CavityComponent, SceneComponent>(m, "CavityComponent")
+        .def(py::init<CavityConfiguration>())
         .def(py::init<>())
     ;
 

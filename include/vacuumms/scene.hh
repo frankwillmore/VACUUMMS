@@ -3,6 +3,7 @@
 #pragma once
 
 #include <vector>
+//#include <typeinfo>
 
 #include <vacuumms/types.h>
 
@@ -24,7 +25,25 @@ SceneComponent
 {
     public:
 
-        std::string getComponentSDL();
+        //FTW virtual std::string getComponentSDL() = 0;
+        virtual std::string getComponentSDL();
+        virtual ~SceneComponent() = default;
+
+        void setTransmit(vacuumms_float);
+        void setPhong(vacuumms_float);
+        void setColor(std::string);
+        void setBoxDims(std::vector<vacuumms_float>);
+        void setClip(int);
+
+virtual void dump();
+        
+    protected:
+
+        vacuumms_float transmit;
+        vacuumms_float phong;
+        std::string color;
+        std::vector<vacuumms_float> box_dims;
+        int clip; // intersect with box
 };
 
 class 
@@ -36,16 +55,15 @@ ConfigurationComponent : public SceneComponent
     public:
 
         ConfigurationComponent(Configuration);
+        ConfigurationComponent();
         std::string getComponentSDL();
-    
-    private:
-    
-        vacuumms_float transmit;
-        vacuumms_float phong;
-        std::string color;
-        std::vector<vacuumms_float> box_dims;
-        int clip; // intersect with box
+
+void dump();
+
+    protected:
+
         Configuration configuration;
+    
 };
 
 class 
@@ -57,6 +75,15 @@ CavityComponent : public SceneComponent
     public:
 
         CavityComponent(CavityConfiguration);
+        CavityComponent();
+        std::string getComponentSDL();
+
+void dump();
+
+    protected:
+
+        CavityConfiguration configuration;
+    
 };
 
 #ifdef BUILD_CUDA_COMPONENTS
@@ -70,6 +97,11 @@ FVIComponent : public SceneComponent
     public:
 
         FVIComponent(FVIX fvix);
+        std::string getComponentSDL();
+
+    protected:
+  
+        FVIX fvix;
 };
 
 #endif
@@ -88,10 +120,15 @@ Scene
         int renderScene(const char* filename);      // PNG file
         std::string generateContainerSDL();
 
-        SceneComponent componentAt(int i);
+int addSceneComponent(SceneComponent*);
+int addCavityComponent(CavityComponent*);
+int addConfigurationComponent(ConfigurationComponent*);
+std::vector<SceneComponent*> components;
+void dumpComponents();
+
+        SceneComponent* componentAt(int i);
         size_t deleteComponentAt(int i);
         size_t getNumberOfComponents();
-        size_t addSceneComponent(SceneComponent);
 
         void setBoxDimensions(std::vector<vacuumms_float>);
         std::vector<vacuumms_float> getBoxDimensions();
@@ -111,7 +148,6 @@ Scene
         int show_box = 0;
 
         std::vector<std::vector<vacuumms_float>> light_sources;
-        std::vector<SceneComponent> components;
         
         std::vector<vacuumms_float> camera_location = {40, 40, 40};
         std::vector<vacuumms_float> camera_look_at = {0, 0, 0};
