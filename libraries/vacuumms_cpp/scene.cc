@@ -245,29 +245,39 @@ size_t Scene::getNumberOfComponents()
 	return components.size();
 }
 
-int Scene::addSceneComponent(SceneComponent* component)
+int Scene::addSceneComponent(SceneComponent& component)
 {
 std::cout<<"pushing SceneComponent " << std::endl;
-    SceneComponent* heap = new SceneComponent(*component);
+    SceneComponent* heap = new SceneComponent(component);
     components.push_back(heap);
 	return components.size();
 }
 
-int Scene::addCavityComponent(CavityComponent* component)
+int Scene::addCavityComponent(CavityComponent& component)
 {
 std::cout<<"pushing CavityComponent " << std::endl;
-    CavityComponent* heap = new CavityComponent(*component);
+    CavityComponent* heap = new CavityComponent(component);
     components.push_back(heap);
 	return components.size();
 }
 
-int Scene::addConfigurationComponent(ConfigurationComponent* component)
+int Scene::addConfigurationComponent(ConfigurationComponent& component)
 {
 std::cout<<"pushing ConfigurationComponent " << std::endl;
-    ConfigurationComponent* heap = new ConfigurationComponent(*component);
+    ConfigurationComponent* heap = new ConfigurationComponent(component);
     components.push_back(heap);
 	return components.size();
 }
+
+#ifdef BUILD_CUDA_COMPONENTS
+int Scene::addFVIComponent(FVIComponent& component)
+{
+std::cout<<"pushing ConfigurationComponent " << std::endl;
+    FVIComponent* heap = new FVIComponent(component);
+    components.push_back(heap);
+	return components.size();
+}
+#endif
 
 void Scene::setBackgroundColor(std::string color)
 {
@@ -312,7 +322,6 @@ void Scene::setBoxColor(std::string color)
 }
 
 
-// I/O
 int Scene::createSceneFile(const char* filename)  // POV file
 {
     std::ofstream scene_file(filename);
@@ -324,27 +333,13 @@ int Scene::createSceneFile(const char* filename)  // POV file
         
         // Components
 
-//std::cout << "components.size(): " << components.size() << std::endl;
+std::cout << "components.size(): " << components.size() << std::endl;
         for (int i=0; i < components.size(); i++)
-//        for (const auto* component : components)
-//        for (auto* component : components)
         {
-//std::cout << "dumping component #" << i << std::endl;
-//            SceneComponent* component = components[i].get();
-//std::cout << "FTW here " << i << std::endl;
-//std::cout << "dumping component #" << (long)component << std::endl;
-//            std::string sdl = component->getComponentSDL();
-//std::cout << "got component sdl: " << sdl << std::endl;
-   
-//            scene_file << "// writing component " << component << std::endl;
-//std::cout << "type: " << typeid(component).name() << std::endl;
-//            scene_file << components[i]->getComponentSDL();
-
-//std::cout << "dumping SDL: " << sdl << std::endl;
-//std::cout << component.getComponentSDL();
-//            scene_file << component.getComponentSDL();
-//            scene_file << std::endl;
-//std::cout << "component " << component << " has SDL: " << component->getComponentSDL() <<  "\n";
+std::cout << "dumping component #" << i << std::endl;
+            std::string sdl = components[i]->getComponentSDL();
+std::cout << "got component sdl: " << sdl << std::endl;
+            scene_file << sdl;
         }
 
         scene_file.close();

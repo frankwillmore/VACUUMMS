@@ -120,11 +120,14 @@ Scene
         int renderScene(const char* filename);      // PNG file
         std::string generateContainerSDL();
 
-int addSceneComponent(SceneComponent*);
-int addCavityComponent(CavityComponent*);
-int addConfigurationComponent(ConfigurationComponent*);
-std::vector<SceneComponent*> components;
-void dumpComponents();
+        int addSceneComponent(SceneComponent&);
+        int addCavityComponent(CavityComponent&);
+        int addConfigurationComponent(ConfigurationComponent&);
+#ifdef BUILD_CUDA_COMPONENTS
+        int addFVIComponent(FVIComponent&);
+#endif
+        std::vector<SceneComponent*> components;
+        void dumpComponents();
 
         SceneComponent* componentAt(int i);
         size_t deleteComponentAt(int i);
