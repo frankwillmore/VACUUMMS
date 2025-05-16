@@ -235,6 +235,7 @@ SceneComponent* Scene::componentAt(int i)
 
 size_t Scene::deleteComponentAt(int i)
 {
+    // This erase also destructs the SceneComponent object
     components.erase(components.begin() + i);
     return components.size();
 }
@@ -390,6 +391,11 @@ int Scene::renderScene(const char* filename)      // PNG file
     }
 
     return result;
+}
+
+Scene::~Scene()
+{
+    for (int i=0;i<components.size();i++) delete components[i];
 }
 
 

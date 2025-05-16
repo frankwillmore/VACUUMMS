@@ -141,6 +141,7 @@ void dumpComponents();
         void applyAmbientLight();
         void setShowBox(int);
         void setBoxColor(std::string);
+        ~Scene();
 
     private:
 
